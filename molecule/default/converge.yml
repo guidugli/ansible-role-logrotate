@@ -1,0 +1,13 @@
+---
+- name: Converge
+  hosts: all
+  pre_tasks:
+
+    - name: Update Debian system package list
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_pkg_mgr == "apt"
+
+  roles:
+    - role: guidugli.logrotate
