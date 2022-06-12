@@ -1,7 +1,7 @@
 ---
 
 - name: Assert that variables have valid values
-  assert:
+  ansible.builtin.assert:
     that:
       - logrotate_compress is defined
       - logrotate_compress | type_debug == 'bool'
