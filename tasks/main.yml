@@ -1,8 +1,8 @@
 ---
 # tasks file for logrotate
 
-- name: include assert.yml
+- name: Include assert.yml
   ansible.builtin.include_tasks: assert.yml
 
-- name: include logrotate.yml
+- name: Include logrotate.yml
   ansible.builtin.include_tasks: logrotate.yml
