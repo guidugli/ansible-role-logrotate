@@ -18,4 +18,3 @@ _logrotated_path:
 
 logrotated_path: "{{ _logrotated_path[ansible_distribution ~ '-' ~ ansible_distribution_major_version] |
                  default(_logrotated_path[ansible_distribution]) | default(_logrotated_path['default']) }}"
-
