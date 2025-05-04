@@ -19,38 +19,3 @@ _logrotated_path:
 logrotated_path: "{{ _logrotated_path[ansible_distribution ~ '-' ~ ansible_distribution_major_version] |
                  default(_logrotated_path[ansible_distribution]) | default(_logrotated_path['default']) }}"
 
-_logrotate_files_to_copy:
-  Debian:
-    - alternatives
-    - apport
-    - apt
-    - bootlog
-    - btmp
-    - dpkg
-    - rsyslog
-    - ubuntu-advantage-tools
-    - ufw
-    - unattended-upgrades
-    - wtmp
-  RedHat:
-    - bootlog
-    - btmp
-    - chrony
-    - cups
-    - dnf
-    - firewalld
-    - glusterfs
-    - httpd
-    - iscsiuiolog
-    - libvirtd
-    - libvirtd.qemu
-    - numad
-    - ppp
-    - psacct
-    - rsyslog
-    - samba
-    - sssd
-    - wpa_supplicant
-    - wtmp
-
-logrotate_files_to_copy: "{{ _logrotate_files_to_copy[ansible_os_family] | default([]) }}"

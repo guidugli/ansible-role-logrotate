@@ -1,7 +1,7 @@
 Ansible Role: logrotate
 =========
 
-An Ansible Role that install and configure logrotate on RHEL/CentOS, Fedora and Debian/Ubuntu.
+An Ansible Role that install and configure logrotate on Fedora and Debian/Ubuntu.
 
 Requirements
 ------------
@@ -13,9 +13,11 @@ Role Variables
 
 **Available variables are listed below, along with default values (see defaults/main.yml):**
 
-    logrotate_config_files: "{{ logrotate_files_to_copy }}"
+    #logrotate_config_files: 
+    #   - chrony
 
-Specify the files to be copied to logrotate.d directory
+Specify the files to be copied to logrotate.d directory. Add the file to be copied into the "files"
+ansible folder, uncomment the variable and add the filename(s). 
 
     logrotate_compress: no
 
@@ -38,10 +40,6 @@ Packages to install logrotate.
     logrotate_conf:
 
 Configuration file location.
-
-    logrotate_files_to_copy:
-
-List of configuration files to copy. The configuration files are located under `files` directory.
 
 Dependencies
 ------------
