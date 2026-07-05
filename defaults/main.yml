@@ -4,7 +4,7 @@
 # Specify the files to be copied to logrotate.d directory
 # Create the file in the files directory and add entry below.
 # Useful for custom configuration.
-#logrotate_config_files:
+# logrotate_config_files:
 #  - chrony
 
 # NOTICE: these settings apply only to global

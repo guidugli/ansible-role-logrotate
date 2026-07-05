@@ -52,7 +52,7 @@
     owner: root
     group: root
     force: yes
-    mode: 0640
+    mode: "0640"
     backup: yes
   loop: "{{ logrotate_config_files }}"
   when: logrotate_config_files is defined
