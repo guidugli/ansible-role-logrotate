@@ -1,0 +1,29 @@
+---
+- name: Detect common logrotate timer unit paths
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - /usr/lib/systemd/system/logrotate.timer
+    - /lib/systemd/system/logrotate.timer
+  register: logrotate_timer_units
+  when: ansible_facts['service_mgr'] == 'systemd'
+  tags:
+    - logrotate
+    - service
+
+- name: Ensure logrotate timer is enabled when available
+  ansible.builtin.systemd_service:
+    name: logrotate.timer
+    state: started
+    enabled: true
+  when:
+    - ansible_facts['service_mgr'] == 'systemd'
+    - >-
+      (logrotate_timer_units.results | default([])
+      | selectattr('stat.exists', 'defined')
+      | selectattr('stat.exists')
+      | list
+      | length) > 0
+  tags:
+    - logrotate
+    - service

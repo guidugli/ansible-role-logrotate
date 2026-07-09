@@ -1,0 +1,16 @@
+---
+- name: Refresh apt cache
+  ansible.builtin.apt:
+    update_cache: true
+  when: ansible_facts['pkg_mgr'] == 'apt'
+  tags:
+    - logrotate
+    - install
+
+- name: Ensure logrotate is installed
+  ansible.builtin.package:
+    name: "{{ logrotate_packages }}"
+    state: present
+  tags:
+    - logrotate
+    - install

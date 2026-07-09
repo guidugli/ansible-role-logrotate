@@ -1,11 +1,24 @@
 ---
-# tasks file for logrotate
+- name: Include validation tasks
+  ansible.builtin.include_tasks: assert.yml
+  tags:
+    - logrotate
+    - validate
 
-- name: Execute role tasks
-  block:
+- name: Include installation tasks
+  ansible.builtin.include_tasks: install.yml
+  tags:
+    - logrotate
+    - install
 
-    - name: Include assert.yml
-      ansible.builtin.include_tasks: assert.yml
+- name: Include configuration tasks
+  ansible.builtin.include_tasks: config.yml
+  tags:
+    - logrotate
+    - config
 
-    - name: Include logrotate.yml
-      ansible.builtin.include_tasks: logrotate.yml
+- name: Include service tasks
+  ansible.builtin.include_tasks: service.yml
+  tags:
+    - logrotate
+    - service

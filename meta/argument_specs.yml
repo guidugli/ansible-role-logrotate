@@ -1,0 +1,30 @@
+---
+argument_specs:
+  main:
+    short_description: Manage logrotate installation and global configuration.
+    description:
+      - Install the logrotate package.
+      - Configure global compression, date extension, and retention values.
+      - Optionally copy additional snippets into the logrotate.d directory.
+    options:
+      logrotate_compress:
+        type: bool
+        default: false
+        description:
+          - Whether rotated files should be compressed globally.
+      logrotate_use_date_extension:
+        type: bool
+        default: true
+        description:
+          - Whether rotated files should use date-based suffixes.
+      logrotate_weeks2keep:
+        type: int
+        default: 24
+        description:
+          - Number of rotated archives retained by the global rotate directive.
+      logrotate_config_files:
+        type: list
+        elements: str
+        default: []
+        description:
+          - Optional list of OS-family-specific snippet files to copy into logrotate.d.

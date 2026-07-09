@@ -1,64 +1,58 @@
-Ansible Role: logrotate
-=========
+[![CI](https://github.com/guidugli/ansible-role-logrotate/actions/workflows/CI.yml/badge.svg)](https://github.com/guidugli/ansible-role-logrotate/actions/workflows/CI.yml)
+[![Release](https://img.shields.io/github/v/tag/guidugli/ansible-role-logrotate?sort=semver)](https://github.com/guidugli/ansible-role-logrotate/tags)
+[![Galaxy](https://img.shields.io/badge/galaxy-guidugli.logrotate-blue)](https://galaxy.ansible.com/ui/standalone/roles/guidugli/logrotate/)
+[![License](https://img.shields.io/github/license/guidugli/ansible-role-logrotate)](https://github.com/guidugli/ansible-role-logrotate/blob/main/LICENSE)
 
-An Ansible Role that install and configure logrotate on Fedora and Debian/Ubuntu.
+# Ansible Role: logrotate
 
-Requirements
-------------
+Install and configure logrotate, keep global rotation defaults consistent, and optionally deploy reusable logrotate snippets.
 
-No requirements.
+## Requirements
 
-Role Variables
---------------
+- Ansible 2.14 or newer for role metadata compatibility.
+- `containers.podman` collection version `>=1.10.0` for Molecule scenarios.
 
-**Available variables are listed below, along with default values (see defaults/main.yml):**
+## Variables
 
-    #logrotate_config_files: 
-    #   - chrony
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `logrotate_compress` | `bool` | `false` | Enable compression for rotated logs in the global configuration. |
+| `logrotate_use_date_extension` | `bool` | `true` | Use date-based suffixes instead of numeric suffixes. |
+| `logrotate_weeks2keep` | `int` | `24` | Set the global `rotate` retention value. |
+| `logrotate_config_files` | `list[str]` | `[]` | Copy OS-family-specific snippets from `files/<os_family>/` into `{{ logrotated_path }}`. |
 
-Specify the files to be copied to logrotate.d directory. Add the file to be copied into the "files"
-ansible folder, uncomment the variable and add the filename(s). 
+## Example Playbook
 
-    logrotate_compress: no
+```yaml
+---
+- name: Configure logrotate
+  hosts: all
+  become: true
+  roles:
+    - role: guidugli.logrotate
+      vars:
+        logrotate_compress: true
+        logrotate_use_date_extension: true
+        logrotate_weeks2keep: 12
+        logrotate_config_files:
+          - custom-app
+```
 
-Set to true/yes to set default configuration to compress rotated files
+## Molecule Testing
 
-    logrotate_use_date_extension: yes
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+ansible-galaxy collection install -r requirements.yml
+molecule test -s default
+molecule test -s systemd
+```
 
-Set to true/yes to use date extension on file name, instead of just numbers
+## Execution Notes
 
-    logrotate_weeks2keep: 24
-
-Set the number of weeks to keep rotated logs
-
-**The variables listed below do not need to be changed for targeted systems (see vars/main.yml):**
-
-    logrotate_packages:
-
-Packages to install logrotate.
-
-    logrotate_conf:
-
-Configuration file location.
-
-Dependencies
-------------
-
-No Dependencies.
-
-Example Playbook
-----------------
-
-    - hosts: servers
-      roles:
-         - { role: guidugli.logrotate }
-
-License
--------
-
-MIT / BSD
-
-Author Information
-------------------
-
-This role was created in 2020 by Carlos Guidugli.
+- The role does not set `become`; privilege must be controlled by the caller.
+- Package installation, edits under `/etc`, and optional snippet deployment require elevated privileges on real hosts.
+- Default Molecule containers typically execute as root, so the shared converge play does not force privilege escalation.
+- `logrotate.timer` is managed only when the target uses `systemd` and the timer unit is present.
+- Non-systemd containers remain supported because the service task is guarded on `ansible_facts['service_mgr']`.

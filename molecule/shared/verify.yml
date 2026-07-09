@@ -1,5 +1,54 @@
 ---
-- name: Verify audit role
+- name: Verify logrotate role
   hosts: all
   gather_facts: true
   tasks:
+    - name: Load role defaults into verify context
+      ansible.builtin.include_role:
+        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}"
+        tasks_from: verify_context
+        public: true
+      tags:
+        - logrotate
+        - validate
+
+    - name: Gather package facts
+      ansible.builtin.package_facts:
+        manager: auto
+      tags:
+        - logrotate
+        - validate
+
+    - name: Assert logrotate package is installed
+      ansible.builtin.assert:
+        that:
+          - "'logrotate' in ansible_facts['packages']"
+        quiet: true
+      tags:
+        - logrotate
+        - validate
+
+    - name: Read logrotate configuration
+      ansible.builtin.slurp:
+        src: /etc/logrotate.conf
+      register: logrotate_conf_file
+      tags:
+        - logrotate
+        - validate
+
+    - name: Decode logrotate configuration
+      ansible.builtin.set_fact:
+        logrotate_conf_content: "{{ logrotate_conf_file['content'] | b64decode }}"
+      changed_when: false
+      tags:
+        - logrotate
+        - validate
+
+    - name: Assert configured retention is present
+      ansible.builtin.assert:
+        that:
+          - "'rotate ' ~ (logrotate_weeks2keep | string) in logrotate_conf_content"
+        quiet: true
+      tags:
+        - logrotate
+        - validate
