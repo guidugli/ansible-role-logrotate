@@ -4,3 +4,11 @@
   gather_facts: true
   roles:
     - role: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}"
+      vars:
+        logrotate_compress: true
+        logrotate_use_date_extension: false
+        logrotate_weeks2keep: 12
+        logrotate_config_files: []
+      tags:
+        - logrotate
+        - config

@@ -2,8 +2,13 @@
 - name: Verify logrotate role
   hosts: all
   gather_facts: true
+  vars:
+    logrotate_compress: true
+    logrotate_use_date_extension: false
+    logrotate_weeks2keep: 12
+    logrotate_config_files: []
   tasks:
-    - name: Load role defaults into verify context
+    - name: Load role defaults and vars into verify context
       ansible.builtin.include_role:
         name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}"
         tasks_from: verify_context
@@ -28,9 +33,27 @@
         - logrotate
         - validate
 
+    - name: Check logrotate configuration file
+      ansible.builtin.stat:
+        path: "{{ logrotate_conf }}"
+      register: logrotate_conf_stat
+      tags:
+        - logrotate
+        - validate
+
+    - name: Assert logrotate configuration file exists
+      ansible.builtin.assert:
+        that:
+          - logrotate_conf_stat.stat.exists
+          - logrotate_conf_stat.stat.isreg
+        quiet: true
+      tags:
+        - logrotate
+        - validate
+
     - name: Read logrotate configuration
       ansible.builtin.slurp:
-        src: /etc/logrotate.conf
+        src: "{{ logrotate_conf }}"
       register: logrotate_conf_file
       tags:
         - logrotate
@@ -47,8 +70,104 @@
     - name: Assert configured retention is present
       ansible.builtin.assert:
         that:
-          - "'rotate ' ~ (logrotate_weeks2keep | string) in logrotate_conf_content"
+          - >-
+            logrotate_conf_content is search(
+              '(?m)^rotate\s+' ~ (logrotate_weeks2keep | string) ~ '$'
+            )
         quiet: true
+      tags:
+        - logrotate
+        - validate
+
+    - name: Assert compression is enabled
+      ansible.builtin.assert:
+        that:
+          - logrotate_conf_content is search('(?m)^compress$')
+          - logrotate_conf_content is not search('(?m)^#compress$')
+        quiet: true
+      tags:
+        - logrotate
+        - validate
+
+    - name: Assert date extension is disabled
+      ansible.builtin.assert:
+        that:
+          - logrotate_conf_content is search('(?m)^#dateext$')
+          - logrotate_conf_content is not search('(?m)^dateext$')
+        quiet: true
+      tags:
+        - logrotate
+        - validate
+
+    - name: Check logrotate include directory
+      ansible.builtin.stat:
+        path: "{{ logrotated_path }}"
+      register: logrotated_dir
+      tags:
+        - logrotate
+        - validate
+
+    - name: Assert logrotate include directory exists
+      ansible.builtin.assert:
+        that:
+          - logrotated_dir.stat.exists
+          - logrotated_dir.stat.isdir
+        quiet: true
+      tags:
+        - logrotate
+        - validate
+
+    - name: Detect logrotate timer unit paths during verify
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - /usr/lib/systemd/system/logrotate.timer
+        - /lib/systemd/system/logrotate.timer
+      register: verify_logrotate_timer_units
+      when: ansible_facts['service_mgr'] == 'systemd'
+      tags:
+        - logrotate
+        - validate
+
+    - name: Check logrotate timer enabled state when unit exists
+      ansible.builtin.command:
+        argv:
+          - systemctl
+          - is-enabled
+          - logrotate.timer
+      register: verify_logrotate_timer_enabled
+      changed_when: false
+      failed_when: false
+      when:
+        - ansible_facts['service_mgr'] == 'systemd'
+        - >-
+          (
+            verify_logrotate_timer_units.results | default([])
+            | selectattr('stat.exists', 'defined')
+            | selectattr('stat.exists')
+            | list
+            | length
+          ) > 0
+      tags:
+        - logrotate
+        - validate
+
+    - name: Assert logrotate timer is enabled when systemd unit exists
+      ansible.builtin.assert:
+        that:
+          - verify_logrotate_timer_enabled.rc == 0
+          - (verify_logrotate_timer_enabled.stdout | trim) in ['enabled', 'enabled-runtime']
+        quiet: true
+      when:
+        - ansible_facts['service_mgr'] == 'systemd'
+        - >-
+          (
+            verify_logrotate_timer_units.results | default([])
+            | selectattr('stat.exists', 'defined')
+            | selectattr('stat.exists')
+            | list
+            | length
+          ) > 0
       tags:
         - logrotate
         - validate
