@@ -1,7 +1,6 @@
 ---
 # Generated file. Do not edit directly.
 # Source template: meta_main.yml.j2
-
 dependencies: []
 galaxy_info:
   role_name: logrotate
@@ -9,7 +8,8 @@ galaxy_info:
   author: guidugli
   company: Creuzo Tech
   description: >-
-    TBD.
+    Install and configure logrotate, keep global rotation defaults consistent,
+    and optionally deploy reusable logrotate snippets.
   license: MIT
   min_ansible_version: '2.14'
   platforms:
@@ -25,12 +25,8 @@ galaxy_info:
         - "trixie"
         - "bookworm"
   galaxy_tags:
-    - audit
-    - auditd
-    - linux
-    - security
-    - compliance
-    - hardening
+    - logrotate
     - logging
-    - cis
-    - monitoring
+    - linux
+    - rotation
+    - system
